@@ -141,10 +141,13 @@ export async function POST(req: NextRequest) {
       
       // Personalize fallback response using the injected user context summary
       if (contextText) {
+        const nameMatch = contextText.match(/Student Name is ([^.]+)\./);
+        const username = nameMatch ? nameMatch[1] : 'Arjun';
+
         if (contextText.includes('High Anxiety')) {
           textResponse += " I know mock tests and backlog anxiety are pulling you down, but let's work on them in small intervals today.";
         } else if (contextText.includes('Exhaustion')) {
-          textResponse += " The sleep debt is compounding, Arjun. Please shut the books and prioritize your rest tonight.";
+          textResponse += ` The sleep debt is compounding, ${username}. Please shut the books and prioritize your rest tonight.`;
         }
       }
 

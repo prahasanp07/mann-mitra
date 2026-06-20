@@ -14,6 +14,8 @@ interface HistoryEntry {
 function getUserContextSummary(): string | null {
   if (typeof window === 'undefined') return null;
   try {
+    const username = localStorage.getItem('mannmitra_username') || 'Arjun';
+    const exam = localStorage.getItem('mannmitra_exam') || 'JEE Mains';
     const raw = localStorage.getItem('mannmitra_history');
     if (!raw) return null;
     const history: HistoryEntry[] = JSON.parse(raw);
@@ -37,7 +39,7 @@ function getUserContextSummary(): string | null {
       ? `${uniqueTriggers.slice(0, -1).map(t => `'${t}'`).join(', ')} and '${uniqueTriggers[uniqueTriggers.length - 1]}'`
       : uniqueTriggers.map(t => `'${t}'`)[0];
 
-    return `[Context: The student is preparing for JEE Mains. Their last ${daysCount} entries showed ${emotionsStr} triggered by ${triggersStr}. Respond with this context in mind but do not explicitly mention reading their logs.]`;
+    return `[Context: Student Name is ${username}. The student is preparing for ${exam}. Their last ${daysCount} entries showed ${emotionsStr} triggered by ${triggersStr}. Respond with this context in mind but do not explicitly mention reading their logs.]`;
   } catch (e) {
     console.error('Error reading context summary:', e);
     return null;
@@ -338,6 +340,27 @@ export function CompanionChat({ stressLevel, setStressLevel }: CompanionChatProp
   const [streamedText, setStreamedText] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [showSafetyModal, setShowSafetyModal] = useState(false);
+  const [username, setUsername] = useState('Arjun');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedName = localStorage.getItem('mannmitra_username');
+      if (storedName) {
+        setUsername(storedName);
+        setMessages((prev) => 
+          prev.map((msg) => {
+            const updatedContent = msg.content.replace(/Arjun/g, storedName);
+            const updatedName = msg.name === 'Arjun' ? (storedName as any) : msg.name;
+            return {
+              ...msg,
+              content: updatedContent,
+              name: updatedName,
+            };
+          })
+        );
+      }
+    }
+  }, []);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -393,7 +416,7 @@ export function CompanionChat({ stressLevel, setStressLevel }: CompanionChatProp
       const userMessage: Message = {
         id: `user-${Date.now()}`,
         role: 'user',
-        name: 'Arjun',
+        name: username as any,
         content: text,
         timestamp: new Date(),
       };
@@ -401,7 +424,7 @@ export function CompanionChat({ stressLevel, setStressLevel }: CompanionChatProp
         id: `safety-${Date.now()}`,
         role: 'assistant',
         name: 'Mitra',
-        content: 'Arjun, I am right here with you, but I want to make sure you get the best human care possible right now. Please lean on these dedicated guides.',
+        content: `${username}, I am right here with you, but I want to make sure you get the best human care possible right now. Please lean on these dedicated guides.`,
         stressLevel: 'overwhelmed',
         timestamp: new Date(),
       };
@@ -415,7 +438,7 @@ export function CompanionChat({ stressLevel, setStressLevel }: CompanionChatProp
     const userMessage: Message = {
       id: `user-${Date.now()}`,
       role: 'user',
-      name: 'Arjun',
+      name: username as any,
       content: text,
       timestamp: new Date(),
     };
@@ -571,8 +594,8 @@ export function CompanionChat({ stressLevel, setStressLevel }: CompanionChatProp
             </button>
             <div className="w-8 h-8 rounded-full overflow-hidden border border-[#e2e8f0] relative">
               {/* Profile image container */}
-              <div className="w-full h-full bg-gradient-to-br from-[#1d3557] to-[#457b9d] flex items-center justify-center text-white text-xs font-bold uppercase">
-                A
+              <div className="w-full h-full bg-gradient-to-br from-[#1d3557] to-[#457b9d] flex items-center justify-center text-white text-xs font-bold uppercase animate-fade-in">
+                {username.charAt(0).toUpperCase()}
               </div>
             </div>
           </div>
@@ -612,7 +635,7 @@ export function CompanionChat({ stressLevel, setStressLevel }: CompanionChatProp
                   ) : (
                     /* Arjun (Right-Aligned, Crisp Dark Blue Text Blocks) */
                     <div className="max-w-[70%] text-right">
-                      <div className="text-[10px] font-bold text-gray-500 mb-1 mr-1">Arjun</div>
+                      <div className="text-[10px] font-bold text-gray-500 mb-1 mr-1">{message.name}</div>
                       <div className="bg-[#1d3557] text-white rounded-2xl rounded-tr-none px-4 py-3 text-left shadow-md">
                         <p className="text-sm leading-relaxed whitespace-pre-wrap">{displayContent}</p>
                       </div>
@@ -812,7 +835,7 @@ export function CompanionChat({ stressLevel, setStressLevel }: CompanionChatProp
             
             <div className="p-6 space-y-4">
               <p className="text-sm text-slate-300 leading-relaxed font-medium">
-                Arjun, you do not have to carry this heavy load alone. Professional, completely confidential human support is available 24/7. Please reach out to these dedicated student helplines right now:
+                {username}, you do not have to carry this heavy load alone. Professional, completely confidential human support is available 24/7. Please reach out to these dedicated student helplines right now:
               </p>
 
               <div className="space-y-3 pt-2">

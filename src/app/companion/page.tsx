@@ -21,6 +21,27 @@ export default function CompanionPage() {
   const [journalText, setJournalText] = useState('');
   const [isSaved, setIsSaved] = useState(false);
 
+  // User State
+  const [username, setUsername] = useState('Arjun');
+  const [exam, setExam] = useState('JEE Mains');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedName = localStorage.getItem('mannmitra_username');
+      const storedExam = localStorage.getItem('mannmitra_exam');
+      if (storedName) setUsername(storedName);
+      if (storedExam) setExam(storedExam);
+    }
+  }, []);
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    if (hour < 21) return 'Good evening';
+    return 'Good night';
+  };
+
   // Initialize local storage mock history for testing
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -110,10 +131,10 @@ export default function CompanionPage() {
   // Dynamic Mitra quote for dashboard based on stress state
   const getMitraQuote = (level: StressLevel) => {
     switch (level) {
-      case 'calm': return "One block at a time, Arjun. You're building a solid baseline. Enjoy the flow of coding or math today.";
-      case 'tired': return "It's okay to feel fatigued, Arjun. Sleep is structural prep—not wasted time. Let's wrap up soon.";
-      case 'stressed': return "Rotation mechanics or backlogs might feel heavy, Arjun, but your efforts are compounding. Breathe, we have this.";
-      case 'overwhelmed': return "Stop the timer, Arjun. Nothing is more urgent than your safety and peace. Take a long exhale, I am right here.";
+      case 'calm': return `One block at a time, ${username}. You're building a solid baseline. Enjoy the flow of coding or math today.`;
+      case 'tired': return `It's okay to feel fatigued, ${username}. Sleep is structural prep—not wasted time. Let's wrap up soon.`;
+      case 'stressed': return `Rotation mechanics or backlogs might feel heavy, ${username}, but your efforts are compounding. Breathe, we have this.`;
+      case 'overwhelmed': return `Stop the timer, ${username}. Nothing is more urgent than your safety and peace. Take a long exhale, I am right here.`;
     }
   };
 
@@ -136,11 +157,11 @@ export default function CompanionPage() {
             {/* Header Area */}
             <div className="flex items-center justify-between pb-4 border-b border-gray-200/60">
               <div>
-                <h2 className="text-3xl font-extrabold text-[#0f172a] tracking-tight">Good morning, Arjun.</h2>
-                <p className="text-sm text-gray-500 mt-1 font-medium">Let's find your focus today. Your JEE Mains prep is on track.</p>
+                <h2 className="text-3xl font-extrabold text-[#0f172a] tracking-tight">{getGreeting()}, {username}.</h2>
+                <p className="text-sm text-gray-500 mt-1 font-medium">Let's find your focus today. Your {exam} prep is on track.</p>
               </div>
               <div className="w-10 h-10 rounded-full bg-[#1d3557] flex items-center justify-center text-white font-bold text-sm">
-                A
+                {username.charAt(0).toUpperCase()}
               </div>
             </div>
 
