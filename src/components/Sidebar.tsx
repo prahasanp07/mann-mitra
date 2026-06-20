@@ -119,7 +119,10 @@ export function Sidebar({ activeTab, setActiveTab, stressLevel }: SidebarProps) 
 
       {/* Footer controls */}
       <div className="space-y-4">
-        <button className="w-full py-3 px-4 bg-[#1d3557] hover:bg-[#234676] text-white font-extrabold text-sm rounded-2xl shadow-sm transition-all text-center">
+        <button
+          onClick={() => setActiveTab('journal')}
+          className="w-full py-3 px-4 bg-[#1d3557] hover:bg-[#234676] text-white font-extrabold text-sm rounded-2xl shadow-sm transition-all text-center cursor-pointer active:scale-95"
+        >
           Quick Reflection
         </button>
 
