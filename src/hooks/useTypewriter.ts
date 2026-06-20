@@ -11,6 +11,12 @@ export function useTypewriter(streamedText: string, isStreaming: boolean, defaul
   const textBufferRef = useRef('');
   const displayedLengthRef = useRef(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const isStreamingRef = useRef(isStreaming);
+
+  // Sync isStreaming to ref to avoid stale closure
+  useEffect(() => {
+    isStreamingRef.current = isStreaming;
+  }, [isStreaming]);
 
   // Sync with incoming stream text
   useEffect(() => {
@@ -61,7 +67,7 @@ export function useTypewriter(streamedText: string, isStreaming: boolean, defaul
       timerRef.current = setTimeout(tick, delay);
     } else {
       timerRef.current = null;
-      if (!isStreaming) {
+      if (!isStreamingRef.current) {
         setIsTyping(false);
       }
     }

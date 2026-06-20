@@ -44,6 +44,248 @@ function getUserContextSummary(): string | null {
   }
 }
 
+function cleanContent(text: string): string {
+  if (!text) return '';
+  return text.replace(/\[TRIGGER_BREATHING\]/g, '').replace(/\[TRIGGER_NSDR\]/g, '').trim();
+}
+
+export function BreathingPacerWidget() {
+  const [isActive, setIsActive] = useState(false);
+  const [elapsedTime, setElapsedTime] = useState(0); // 0 to 16000 ms
+
+  useEffect(() => {
+    if (!isActive) return;
+    const interval = setInterval(() => {
+      setElapsedTime((prev) => (prev + 50) % 16000);
+    }, 50);
+    return () => clearInterval(interval);
+  }, [isActive]);
+
+  const phaseDuration = 4000;
+  const phaseIndex = Math.floor(elapsedTime / phaseDuration); // 0, 1, 2, 3
+  const phaseTime = elapsedTime % phaseDuration; // 0 to 3999
+
+  let scale = 0.75;
+  let phaseText = '';
+  let phaseColor = 'from-teal-400 to-emerald-500 shadow-emerald-250';
+  let instruction = '';
+
+  if (phaseIndex === 0) {
+    // Inhale
+    scale = 0.75 + 0.5 * (phaseTime / phaseDuration);
+    phaseText = 'Inhale';
+    phaseColor = 'from-teal-400 to-emerald-500 shadow-emerald-200/50';
+    instruction = 'Breathe in slowly through your nose...';
+  } else if (phaseIndex === 1) {
+    // Hold-In
+    scale = 1.25;
+    phaseText = 'Hold';
+    phaseColor = 'from-[#457b9d] to-[#1d3557] shadow-blue-200/50';
+    instruction = 'Hold your breath and feel the fullness...';
+  } else if (phaseIndex === 2) {
+    // Exhale
+    scale = 1.25 - 0.5 * (phaseTime / phaseDuration);
+    phaseText = 'Exhale';
+    phaseColor = 'from-amber-400 to-rose-500 shadow-rose-200/50';
+    instruction = 'Release gently through your mouth...';
+  } else {
+    // Hold-Out
+    scale = 0.75;
+    phaseText = 'Hold';
+    phaseColor = 'from-slate-400 to-slate-500 shadow-slate-200/50';
+    instruction = 'Hold empty before the next breath...';
+  }
+
+  const secondsLeft = Math.ceil((phaseDuration - phaseTime) / 1000);
+
+  const handleToggle = () => {
+    setIsActive(!isActive);
+    if (!isActive) {
+      setElapsedTime(0);
+    }
+  };
+
+  return (
+    <div className="bg-white border border-[#e2e8f0] rounded-2xl p-5 shadow-sm max-w-sm mt-3 flex flex-col items-center select-none w-full">
+      <div className="flex items-center gap-2 mb-3 w-full">
+        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Deep Focus Breathing</span>
+      </div>
+      
+      {/* Pacer Outer Container */}
+      <div className="relative w-40 h-40 flex items-center justify-center mb-4">
+        {/* Outer guide ring */}
+        <div className="absolute inset-0 rounded-full border-2 border-dashed border-[#1d3557]/10" />
+        
+        {/* Inner breathing circle */}
+        <div
+          className={`absolute rounded-full bg-gradient-to-br ${phaseColor} flex flex-col items-center justify-center text-white font-bold transition-all duration-[75ms] ease-out shadow-[0_10px_25px_-5px_rgba(29,53,87,0.15)]`}
+          style={{
+            width: '120px',
+            height: '120px',
+            transform: `scale(${isActive ? scale : 0.83})`,
+          }}
+        >
+          <span className="text-base tracking-widest uppercase font-extrabold">{isActive ? phaseText : 'READY'}</span>
+          {isActive && <span className="text-[10px] font-bold tracking-wider opacity-85 mt-0.5">{secondsLeft}s</span>}
+        </div>
+      </div>
+
+      <div className="flex gap-1.5 mb-3 mt-1">
+        {['Inhale', 'Hold (In)', 'Exhale', 'Hold (Out)'].map((pName, idx) => {
+          const isCurrent = isActive && phaseIndex === idx;
+          return (
+            <span
+              key={idx}
+              className={`text-[9px] font-bold px-2 py-0.5 rounded-full transition-all duration-300 ${
+                isCurrent
+                  ? 'bg-[#1d3557] text-white'
+                  : 'bg-slate-50 text-slate-400 border border-slate-100'
+              }`}
+            >
+              {pName}
+            </span>
+          );
+        })}
+      </div>
+      
+      <p className="text-xs font-medium text-slate-600 text-center min-h-[32px] px-4 leading-relaxed">
+        {isActive ? instruction : 'Click start to begin the 4-4-4-4 box breathing cycle to calm your nervous system.'}
+      </p>
+      
+      <button
+        onClick={handleToggle}
+        className={`mt-3 px-5 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${
+          isActive
+            ? 'bg-rose-50 border border-rose-250 text-rose-600 hover:bg-rose-100'
+            : 'bg-[#1d3557] text-white hover:bg-[#234676] shadow-sm shadow-[#1d3557]/20'
+        }`}
+      >
+        {isActive ? 'Pause' : 'Start Pacer'}
+      </button>
+    </div>
+  );
+}
+
+export function NSDRPlayerWidget() {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0); // 0 to 600 seconds
+  const [pulse, setPulse] = useState(72);
+
+  // Time tracker
+  useEffect(() => {
+    if (!isPlaying) return;
+    const interval = setInterval(() => {
+      setCurrentTime((prev) => {
+        if (prev >= 600) {
+          setIsPlaying(false);
+          return 600;
+        }
+        return prev + 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
+  // Pulse fluctuation
+  useEffect(() => {
+    if (!isPlaying) return;
+    const interval = setInterval(() => {
+      setPulse(() => {
+        return Math.floor(Math.random() * 5) + 70; // 70 to 74
+      });
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
+  const formatTime = (secs: number) => {
+    const mins = Math.floor(secs / 60);
+    const remainingSecs = secs % 60;
+    return `${mins}:${remainingSecs < 10 ? '0' : ''}${remainingSecs}`;
+  };
+
+  return (
+    <div className="bg-white border border-[#e2e8f0] rounded-2xl p-5 shadow-sm max-w-sm mt-3 flex flex-col w-full select-none">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-[#1d3557] animate-pulse" />
+          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">NSDR Rest Protocol</span>
+        </div>
+        
+        {/* Live Pulse Pill */}
+        <div className="flex items-center gap-1.5 bg-rose-50 border border-rose-100 text-rose-600 px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all">
+          <span className={`w-1.5 h-1.5 rounded-full bg-rose-500 ${isPlaying ? 'animate-ping' : ''}`} />
+          <span>🔴 Live Pulse: {isPlaying ? pulse : '72'} BPM</span>
+        </div>
+      </div>
+
+      {/* Description text */}
+      <p className="text-xs text-slate-500 leading-relaxed mb-4">
+        Your current data suggests high stress levels and a significant sleep deficit. This 10-minute Non-Sleep Deep Rest (NSDR) audio guide will help reduce cortisol, activate your parasympathetic nervous system, and reset your mind.
+      </p>
+
+      {/* Wave animation */}
+      <div className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl overflow-hidden relative flex items-center justify-center mb-4">
+        <style>{`
+          @keyframes wave-flow {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-50%, 0, 0); }
+          }
+          .wave-animated {
+            animation: wave-flow 3s linear infinite;
+          }
+        `}</style>
+        {isPlaying ? (
+          <svg viewBox="0 0 100 20" className="w-[200%] h-full absolute left-0 text-[#1d3557]/15 fill-current wave-animated">
+            <path d="M 0 10 C 12.5 5, 12.5 15, 25 10 C 37.5 5, 37.5 15, 50 10 C 62.5 5, 62.5 15, 75 10 C 87.5 5, 87.5 15, 100 10 L 100 20 L 0 20 Z" />
+            <path d="M 0 12 C 15 8, 15 16, 30 12 C 45 8, 45 16, 60 12 C 75 8, 75 16, 90 12 L 90 20 L 0 20 Z" className="opacity-60" />
+          </svg>
+        ) : (
+          <span className="text-xs font-semibold text-slate-400">Audio session paused</span>
+        )}
+      </div>
+
+      {/* Player Controls & Slider */}
+      <div className="flex items-center gap-3">
+        {/* Play/Pause Button */}
+        <button
+          onClick={() => setIsPlaying(!isPlaying)}
+          className="w-10 h-10 rounded-full bg-[#1d3557] hover:bg-[#234676] text-white flex items-center justify-center shrink-0 shadow-sm shadow-[#1d3557]/20 transition-all active:scale-95"
+        >
+          {isPlaying ? (
+            /* Pause Icon */
+            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+            </svg>
+          ) : (
+            /* Play Icon */
+            <svg className="w-4 h-4 fill-current ml-0.5" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          )}
+        </button>
+
+        {/* Slider and Timers */}
+        <div className="flex-1 flex flex-col gap-1">
+          <input
+            type="range"
+            min="0"
+            max="600"
+            value={currentTime}
+            onChange={(e) => setCurrentTime(Number(e.target.value))}
+            className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#1d3557] focus:outline-none"
+          />
+          <div className="flex justify-between text-[10px] font-semibold text-slate-400 font-mono">
+            <span>{formatTime(currentTime)}</span>
+            <span>10:00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface Message {
   id: string;
   role: 'user' | 'assistant';
@@ -95,6 +337,7 @@ export function CompanionChat({ stressLevel, setStressLevel }: CompanionChatProp
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamedText, setStreamedText] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const [showSafetyModal, setShowSafetyModal] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -127,6 +370,47 @@ export function CompanionChat({ stressLevel, setStressLevel }: CompanionChatProp
 
   const handleSendMessage = async (text: string) => {
     if (!text.trim() || isStreaming || isTyping) return;
+
+    const normalizedText = text.toLowerCase();
+    const highRiskKeywords = [
+      'give up', 
+      'suicide', 
+      'cannot live', 
+      'end everything', 
+      'kill myself', 
+      'ending my life', 
+      'want to die', 
+      'self-harm', 
+      'self harm', 
+      'hang myself', 
+      'slit my wrist', 
+      'no point living', 
+      'better off dead'
+    ];
+    const isHighRisk = highRiskKeywords.some(keyword => normalizedText.includes(keyword));
+
+    if (isHighRisk) {
+      const userMessage: Message = {
+        id: `user-${Date.now()}`,
+        role: 'user',
+        name: 'Arjun',
+        content: text,
+        timestamp: new Date(),
+      };
+      const safetyReply: Message = {
+        id: `safety-${Date.now()}`,
+        role: 'assistant',
+        name: 'Mitra',
+        content: 'Arjun, I am right here with you, but I want to make sure you get the best human care possible right now. Please lean on these dedicated guides.',
+        stressLevel: 'overwhelmed',
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, userMessage, safetyReply]);
+      setInputValue('');
+      setShowSafetyModal(true);
+      setStressLevel('overwhelmed');
+      return;
+    }
 
     const userMessage: Message = {
       id: `user-${Date.now()}`,
@@ -296,38 +580,56 @@ export function CompanionChat({ stressLevel, setStressLevel }: CompanionChatProp
 
         {/* Message Scroll Container */}
         <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex w-full ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              {message.role === 'assistant' ? (
-                /* Mitra (Left-Aligned, Light grey-blue bg, Mitra Bot Avatar) */
-                <div className="flex items-start gap-3 max-w-[70%]">
-                  {/* Bot Avatar */}
-                  <div className="w-8 h-8 rounded-full bg-[#e9eff6] flex items-center justify-center shrink-0 border border-[#d0dfef] shadow-sm">
-                    <svg className="w-4 h-4 text-[#1d3557]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <div className="text-[10px] font-bold text-gray-500 mb-1 ml-1">Mitra</div>
-                    <div className="bg-[#e9eff6] text-[#0f172a] rounded-2xl rounded-tl-none px-4 py-3 border border-[#dce6f0] shadow-sm">
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+          {messages.map((message) => {
+            const hasBreathing = message.content.includes('[TRIGGER_BREATHING]');
+            const hasNSDR = message.content.includes('[TRIGGER_NSDR]');
+            const displayContent = cleanContent(message.content);
+
+            return (
+              <div
+                key={message.id}
+                className={`flex w-full flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}
+              >
+                <div
+                  className={`flex w-full ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  {message.role === 'assistant' ? (
+                    /* Mitra (Left-Aligned, Light grey-blue bg, Mitra Bot Avatar) */
+                    <div className="flex items-start gap-3 max-w-[70%]">
+                      {/* Bot Avatar */}
+                      <div className="w-8 h-8 rounded-full bg-[#e9eff6] flex items-center justify-center shrink-0 border border-[#d0dfef] shadow-sm">
+                        <svg className="w-4 h-4 text-[#1d3557]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-bold text-gray-500 mb-1 ml-1">Mitra</div>
+                        <div className="bg-[#e9eff6] text-[#0f172a] rounded-2xl rounded-tl-none px-4 py-3 border border-[#dce6f0] shadow-sm">
+                          <p className="text-sm leading-relaxed whitespace-pre-wrap">{displayContent}</p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    /* Arjun (Right-Aligned, Crisp Dark Blue Text Blocks) */
+                    <div className="max-w-[70%] text-right">
+                      <div className="text-[10px] font-bold text-gray-500 mb-1 mr-1">Arjun</div>
+                      <div className="bg-[#1d3557] text-white rounded-2xl rounded-tr-none px-4 py-3 text-left shadow-md">
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap">{displayContent}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                /* Arjun (Right-Aligned, Crisp Dark Blue Text Blocks) */
-                <div className="max-w-[70%] text-right">
-                  <div className="text-[10px] font-bold text-gray-500 mb-1 mr-1">Arjun</div>
-                  <div className="bg-[#1d3557] text-white rounded-2xl rounded-tr-none px-4 py-3 text-left shadow-md">
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                
+                {/* Widgets render below the assistant's response bubble */}
+                {message.role === 'assistant' && (hasBreathing || hasNSDR) && (
+                  <div className="ml-11 flex flex-col gap-2">
+                    {hasBreathing && <BreathingPacerWidget />}
+                    {hasNSDR && <NSDRPlayerWidget />}
                   </div>
-                </div>
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            );
+          })}
 
           {/* Typing/Streaming placeholder */}
           {(isStreaming || isTyping) && (
@@ -348,7 +650,7 @@ export function CompanionChat({ stressLevel, setStressLevel }: CompanionChatProp
                         <span className="w-1.5 h-1.5 bg-[#1d3557] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                       </span>
                     ) : (
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap">{displayedText || streamedText}</p>
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap">{cleanContent(displayedText || streamedText)}</p>
                     )}
                   </div>
                 </div>
@@ -468,6 +770,119 @@ export function CompanionChat({ stressLevel, setStressLevel }: CompanionChatProp
           </div>
         </div>
       </div>
+
+      {/* High-contrast Safety Support Modal */}
+      {showSafetyModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+          <style>{`
+            @keyframes fade-in {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+            @keyframes slide-up {
+              from { transform: translateY(20px); opacity: 0; }
+              to { transform: translateY(0); opacity: 1; }
+            }
+            .animate-fade-in {
+              animation: fade-in 0.25s ease-out forwards;
+            }
+            .animate-slide-up {
+              animation: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            }
+          `}</style>
+          <div className="bg-slate-900 text-white rounded-3xl border border-rose-500 max-w-md w-full overflow-hidden shadow-[0_20px_50px_rgba(244,63,94,0.3)] animate-slide-up">
+            <div className="bg-gradient-to-r from-rose-600 to-rose-700 p-5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <h3 className="font-extrabold text-base tracking-wide">Emergency Support Available</h3>
+              </div>
+              <button 
+                onClick={() => setShowSafetyModal(false)}
+                className="text-white/80 hover:text-white bg-white/10 hover:bg-white/20 p-1.5 rounded-full transition-all"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-slate-300 leading-relaxed font-medium">
+                Arjun, you do not have to carry this heavy load alone. Professional, completely confidential human support is available 24/7. Please reach out to these dedicated student helplines right now:
+              </p>
+
+              <div className="space-y-3 pt-2">
+                {/* Vandrevala Foundation */}
+                <div className="bg-slate-800 border border-slate-700/80 rounded-2xl p-4 flex flex-col gap-1 hover:border-rose-500/30 transition-all duration-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-rose-400">Vandrevala Foundation</span>
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-full border border-emerald-500/20">24/7 Active</span>
+                  </div>
+                  <a 
+                    href="tel:+919999666555" 
+                    className="text-lg font-black text-white hover:text-rose-450 flex items-center gap-2 transition-all mt-1"
+                  >
+                    <svg className="w-5 h-5 text-rose-500 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                    </svg>
+                    +91 9999 666 555
+                  </a>
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1">
+                    <span>Free Counseling & Crisis Care</span>
+                    <a href="https://www.vandrevalafoundation.com" target="_blank" rel="noopener noreferrer" className="hover:underline text-rose-400 font-semibold">vandrevalafoundation.com</a>
+                  </div>
+                </div>
+
+                {/* AASRA */}
+                <div className="bg-slate-800 border border-slate-700/80 rounded-2xl p-4 flex flex-col gap-1 hover:border-rose-500/30 transition-all duration-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-rose-400">AASRA Helpline</span>
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-full border border-emerald-500/20">24/7 Support</span>
+                  </div>
+                  <a 
+                    href="tel:+919820466726" 
+                    className="text-lg font-black text-white hover:text-rose-450 flex items-center gap-2 transition-all mt-1"
+                  >
+                    <svg className="w-5 h-5 text-rose-500 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                    </svg>
+                    +91 98204 66726
+                  </a>
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1">
+                    <span>Confidential Suicide Prevention</span>
+                    <a href="https://www.aasra.info" target="_blank" rel="noopener noreferrer" className="hover:underline text-rose-400 font-semibold">aasra.info</a>
+                  </div>
+                </div>
+                
+                {/* Gov Support */}
+                <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-2">
+                  <div className="flex justify-between items-center text-[11px] font-bold text-slate-300">
+                    <span>Tele MANAS Support:</span>
+                    <a href="tel:14416" className="text-rose-400 hover:underline">14416</a>
+                  </div>
+                  <div className="flex justify-between items-center text-[11px] font-bold text-slate-300">
+                    <span>KIRAN Govt Support:</span>
+                    <a href="tel:18005990019" className="text-rose-400 hover:underline">1800-599-0019</a>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-3">
+                <button
+                  onClick={() => setShowSafetyModal(false)}
+                  className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-200 text-xs font-bold transition-all hover:text-white"
+                >
+                  I understand, close guide
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
