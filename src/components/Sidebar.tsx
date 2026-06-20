@@ -1,15 +1,17 @@
 'use strict';
 
 import React from 'react';
+import Image from 'next/image';
 import { StressLevel } from '@/lib/mitra-agent';
 
 interface SidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   stressLevel: StressLevel;
+  onLogoClick: () => void;
 }
 
-export function Sidebar({ activeTab, setActiveTab, stressLevel }: SidebarProps) {
+export function Sidebar({ activeTab, setActiveTab, stressLevel, onLogoClick }: SidebarProps) {
   const getStressText = (level: StressLevel) => {
     switch (level) {
       case 'calm': return 'Low';
@@ -79,12 +81,14 @@ export function Sidebar({ activeTab, setActiveTab, stressLevel }: SidebarProps) 
   return (
     <aside className="w-64 border-r border-[#e2e8f0] bg-[#fcfdfe] flex flex-col justify-between shrink-0 h-full p-4">
       <div className="flex flex-col">
-        {/* Brand Header with icon resembling the brain chatbot */}
-        <div className="flex items-center gap-3 px-2 py-4 mb-6 border-b border-[#f1f5f9]">
-          <div className="w-10 h-10 rounded-xl bg-[#1d3557] flex items-center justify-center shadow-md">
-            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-2 0c0 .993-.241 1.929-.668 2.754l-1.524-1.525a3.997 3.997 0 00.192-1.229 4 4 0 00-4-4 3.997 3.997 0 00-1.229.192L7.246 4.668A7.996 7.996 0 0110 4c4.418 0 8 3.582 8 8zm-8 4a3.997 3.997 0 001.229-.192l1.524 1.525A7.996 7.996 0 0110 20c-4.418 0-8-3.582-8-8 0-.993.241-1.929.668-2.754l1.524 1.525a3.997 3.997 0 00-.192 1.229 4 4 0 004 4z" clipRule="evenodd" />
-            </svg>
+        {/* Brand Header — click to go home */}
+        <button
+          onClick={onLogoClick}
+          className="flex items-center gap-3 px-2 py-4 mb-6 border-b border-[#f1f5f9] w-full text-left hover:opacity-75 transition-opacity cursor-pointer group"
+          title="Back to home"
+        >
+          <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 shadow-md group-hover:shadow-lg transition-shadow">
+            <Image src="/logo.png" alt="MannMitra Logo" width={40} height={40} className="object-contain w-full h-full" />
           </div>
           <div>
             <h1 className="text-base font-extrabold text-[#0f172a] leading-none">Mitra</h1>
@@ -92,7 +96,7 @@ export function Sidebar({ activeTab, setActiveTab, stressLevel }: SidebarProps) 
               Stress Level: <span className={`font-bold ${getStressTextColor(stressLevel)}`}>{getStressText(stressLevel)}</span>
             </p>
           </div>
-        </div>
+        </button>
 
         {/* Navigation items resembling the list items exactly */}
         <nav className="space-y-1">

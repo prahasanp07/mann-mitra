@@ -80,11 +80,14 @@ export default function Home() {
       <header className="w-full bg-white/70 backdrop-blur-md border-b border-slate-200/50 fixed top-0 left-0 z-40">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#1d3557] flex items-center justify-center shadow-sm">
-              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-2 0c0 .993-.241 1.929-.668 2.754l-1.524-1.525a3.997 3.997 0 00.192-1.229 4 4 0 00-4-4 3.997 3.997 0 00-1.229.192L7.246 4.668A7.996 7.996 0 0110 4c4.418 0 8 3.582 8 8zm-8 4a3.997 3.997 0 001.229-.192l1.524 1.525A7.996 7.996 0 0110 20c-4.418 0-8-3.582-8-8 0-.993.241-1.929.668-2.754l1.524 1.525a3.997 3.997 0 00-.192 1.229 4 4 0 004 4z" clipRule="evenodd" />
-              </svg>
-            </div>
+            <Image
+              src="/logo.png"
+              alt="MannMitra Logo"
+              width={36}
+              height={36}
+              className="object-contain"
+              priority
+            />
             <span className="font-extrabold text-lg text-[#0f172a] tracking-tight">MannMitra</span>
           </div>
 
@@ -380,11 +383,14 @@ export default function Home() {
       {/* Footer */}
       <footer className="w-full bg-white border-t border-slate-200/50 py-10 px-6 mt-10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="text-left space-y-1.5">
-            <span className="font-extrabold text-base text-[#0f172a] block">MannMitra</span>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-              © 2026 MannMitra. Your digital sanctuary for academic focus.
-            </p>
+          <div className="text-left space-y-1.5 flex items-center gap-3">
+            <Image src="/logo.png" alt="MannMitra" width={32} height={32} className="object-contain" />
+            <div>
+              <span className="font-extrabold text-base text-[#0f172a] block">MannMitra</span>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                © 2026 MannMitra. Your digital sanctuary for academic focus.
+              </p>
+            </div>
           </div>
 
           <div className="flex gap-6 text-[11px] font-bold text-slate-400 uppercase tracking-widest">

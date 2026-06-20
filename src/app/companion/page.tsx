@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Sidebar } from '@/components/Sidebar';
 import { CompanionChat } from '@/components/CompanionChat';
 import { StressLevel } from '@/lib/mitra-agent';
@@ -8,6 +9,7 @@ import { StressLevel } from '@/lib/mitra-agent';
 type Tab = 'dashboard' | 'journal' | 'insights' | 'mindfulness' | 'companion';
 
 export default function CompanionPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>('companion');
   const [stressLevel, setStressLevel] = useState<StressLevel>('stressed');
 
@@ -147,6 +149,26 @@ export default function CompanionPage() {
     else setTimerMinutes(15);
   };
 
+  // Reset all state and go back to the landing page
+  const handleGoHome = () => {
+    setActiveTab('companion');
+    setStressLevel('stressed');
+    setTimerMinutes(25);
+    setTimerSeconds(0);
+    setTimerActive(false);
+    setTimerType('study');
+    setJournalText('');
+    setIsSaved(false);
+    setMindfulnessTab('timer');
+    setSighActive(false);
+    setSighTime(0);
+    setShowNSDRModal(false);
+    setNsdrTimeLeft(600);
+    setNsdrActive(false);
+    setShowPanoramicModal(false);
+    router.push('/');
+  };
+
   // Helper values for Stress Gauge in Dashboard
   const getStressDetails = (level: StressLevel) => {
     switch (level) {
@@ -176,7 +198,7 @@ export default function CompanionPage() {
   return (
     <div className="flex h-screen bg-[#f4f6fa] text-[#0f172a] overflow-hidden font-sans">
       {/* Dynamic Sidebar */}
-      <Sidebar activeTab={activeTab} setActiveTab={(tab) => setActiveTab(tab as Tab)} stressLevel={stressLevel} />
+      <Sidebar activeTab={activeTab} setActiveTab={(tab) => setActiveTab(tab as Tab)} stressLevel={stressLevel} onLogoClick={handleGoHome} />
 
       {/* Main Dashboard Pages */}
       <main className="flex-1 h-full overflow-hidden flex flex-col bg-[#f4f6fa]">
