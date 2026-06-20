@@ -317,30 +317,36 @@ export function CompanionChat({ stressLevel, setStressLevel }: CompanionChatProp
       name: 'Mitra',
       content: "Hey Arjun. I know how heavy the prep load is right now, and I'm right here with you. How are you feeling today?",
       stressLevel: 'calm',
-      timestamp: new Date(Date.now() - 60000 * 5),
-    },
-    {
-      id: 'history-1',
-      role: 'user',
-      name: 'Arjun',
-      content: "I failed my mock test today, and my physics rotation mechanics backlog is completely crushing me.",
-      timestamp: new Date(Date.now() - 60000 * 4),
-    },
-    {
-      id: 'history-2',
-      role: 'assistant',
-      name: 'Mitra',
-      content: "It makes total sense that rotation mechanics feels overwhelming right now, especially after a score drop. You are carrying so much expectation, but one test does not define your future. Let's just focus on taking a slow breath right now.",
-      stressLevel: 'stressed',
-      timestamp: new Date(Date.now() - 60000 * 3),
+      timestamp: new Date(),
     },
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamedText, setStreamedText] = useState('');
-  const [isListening, setIsListening] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const [showSafetyModal, setShowSafetyModal] = useState(false);
   const [username, setUsername] = useState('Arjun');
+
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recognitionRef = useRef<any>(null);
+  const transcriptRef = useRef<string>('');
+  const activeAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Cleanup audio, recording and recognition on unmount
+  useEffect(() => {
+    return () => {
+      if (activeAudioRef.current) {
+        try { activeAudioRef.current.pause(); } catch (_) {}
+      }
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        try { mediaRecorderRef.current.stop(); } catch (_) {}
+      }
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch (_) {}
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -393,6 +399,15 @@ export function CompanionChat({ stressLevel, setStressLevel }: CompanionChatProp
 
   const handleSendMessage = async (text: string) => {
     if (!text.trim() || isStreaming || isTyping) return;
+
+    if (activeAudioRef.current) {
+      try {
+        activeAudioRef.current.pause();
+      } catch (err) {
+        console.error(err);
+      }
+      activeAudioRef.current = null;
+    }
 
     const normalizedText = text.toLowerCase();
     const highRiskKeywords = [
@@ -521,10 +536,10 @@ export function CompanionChat({ stressLevel, setStressLevel }: CompanionChatProp
         style: 'bg-indigo-50 text-indigo-700 border-indigo-200',
       };
     }
-    if (isListening) {
+    if (isRecording) {
       return {
-        text: '🎙️ Listening to Voice Input...',
-        style: 'bg-emerald-50 text-emerald-700 border-emerald-200 animate-pulse',
+        text: '🎙️ Recording (Release to Send)...',
+        style: 'bg-rose-50 text-rose-700 border-rose-200 animate-pulse shadow-[0_0_12px_rgba(244,63,94,0.08)]',
       };
     }
     
@@ -554,15 +569,255 @@ export function CompanionChat({ stressLevel, setStressLevel }: CompanionChatProp
 
   const statusPill = getStatusPill();
 
-  const handleMicClick = () => {
-    if (isStreaming || isTyping) return;
-    setIsListening(!isListening);
-    if (!isListening) {
-      // Simulate simple voice-to-text injection
-      setTimeout(() => {
-        setInputValue("I feel exhausted and cannot concentrate on organic chemistry.");
-        setIsListening(false);
-      }, 3000);
+  const startVoiceRecording = async (e?: React.MouseEvent | React.TouchEvent) => {
+    if (e) {
+      if (e.cancelable) e.preventDefault();
+    }
+    if (isStreaming || isTyping || isRecording) return;
+
+    // Stop any existing audio playback
+    if (activeAudioRef.current) {
+      try {
+        activeAudioRef.current.pause();
+      } catch (err) {
+        console.error(err);
+      }
+      activeAudioRef.current = null;
+    }
+
+    audioChunksRef.current = [];
+    transcriptRef.current = '';
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setIsRecording(true);
+
+      // Initialize MediaRecorder
+      const options = { mimeType: 'audio/webm' };
+      let mediaRecorder: MediaRecorder;
+      try {
+        mediaRecorder = new MediaRecorder(stream, options);
+      } catch (err) {
+        // Fallback for browsers like Safari
+        mediaRecorder = new MediaRecorder(stream);
+      }
+      
+      mediaRecorderRef.current = mediaRecorder;
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        // Stop all audio tracks to release microphone
+        stream.getTracks().forEach(track => track.stop());
+        
+        const audioBlob = new Blob(audioChunksRef.current, { type: mediaRecorder.mimeType || 'audio/webm' });
+        
+        const spokenText = transcriptRef.current;
+        const normalizedTranscript = spokenText.toLowerCase();
+        const highRiskKeywords = [
+          'give up', 
+          'suicide', 
+          'cannot live', 
+          'end everything', 
+          'kill myself', 
+          'ending my life', 
+          'want to die', 
+          'self-harm', 
+          'self harm', 
+          'hang myself', 
+          'slit my wrist', 
+          'no point living', 
+          'better off dead'
+        ];
+        const isHighRisk = highRiskKeywords.some(keyword => normalizedTranscript.includes(keyword));
+
+        if (isHighRisk) {
+          const storedName = localStorage.getItem('mannmitra_username') || 'Arjun';
+          const userMessage: Message = {
+            id: `user-${Date.now()}`,
+            role: 'user',
+            name: storedName as any,
+            content: spokenText,
+            timestamp: new Date(),
+          };
+          const safetyReply: Message = {
+            id: `safety-${Date.now()}`,
+            role: 'assistant',
+            name: 'Mitra',
+            content: `${storedName}, I am right here with you, but I want to make sure you get the best human care possible right now. Please lean on these dedicated guides.`,
+            stressLevel: 'overwhelmed',
+            timestamp: new Date(),
+          };
+          setMessages((prev) => [...prev, userMessage, safetyReply]);
+          setShowSafetyModal(true);
+          setStressLevel('overwhelmed');
+          return;
+        }
+
+        // Send the payload to the server
+        await sendVoicePayload(audioBlob, spokenText);
+      };
+
+      // Start speech recognition locally (Option B)
+      const SpeechRecognition = typeof window !== 'undefined' ? ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition) : null;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-IN'; // Indian English accent fallback
+        
+        recognition.onresult = (event: any) => {
+          const results = event.results;
+          if (results && results[0] && results[0][0]) {
+            transcriptRef.current = results[0][0].transcript;
+            console.log("Recognized speech:", transcriptRef.current);
+          }
+        };
+
+        recognition.onerror = (event: any) => {
+          console.error("Speech recognition error:", event.error);
+        };
+
+        recognitionRef.current = recognition;
+        recognition.start();
+      }
+
+      mediaRecorder.start();
+    } catch (err) {
+      console.error("Failed to access microphone:", err);
+    }
+  };
+
+  const stopVoiceRecording = () => {
+    if (!mediaRecorderRef.current || mediaRecorderRef.current.state === 'inactive') return;
+    setIsRecording(false);
+
+    try {
+      mediaRecorderRef.current.stop();
+    } catch (e) {
+      console.error(e);
+    }
+
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {
+        console.error(e);
+      }
+      recognitionRef.current = null;
+    }
+  };
+
+  const sendVoicePayload = async (audioBlob: Blob, text: string) => {
+    setIsStreaming(true);
+    setStreamedText('');
+    resetTypewriter();
+
+    try {
+      const storedName = localStorage.getItem('mannmitra_username') || 'Arjun';
+      const storedExam = localStorage.getItem('mannmitra_exam') || 'JEE Mains';
+
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.webm');
+      formData.append('text', text);
+      formData.append('stressLevel', stressLevel);
+      formData.append('username', storedName);
+      formData.append('exam', storedExam);
+
+      const response = await fetch('/api/voice', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Voice API Request Failed');
+      }
+
+      // Read custom headers from response
+      const userTranscriptHeader = response.headers.get('X-User-Transcript') || '';
+      const mitraReplyHeader = response.headers.get('X-Mitra-Reply') || '';
+      const serverDetectedStress = response.headers.get('X-Detected-Stress-Level') as StressLevel;
+
+      const userTranscript = userTranscriptHeader ? decodeURIComponent(userTranscriptHeader) : (text || 'Voice input');
+      const mitraReply = mitraReplyHeader ? decodeURIComponent(mitraReplyHeader) : '';
+
+      // Check for safety keywords in the user's transcript or text
+      const normalizedTranscript = userTranscript.toLowerCase();
+      const highRiskKeywords = [
+        'give up', 
+        'suicide', 
+        'cannot live', 
+        'end everything', 
+        'kill myself', 
+        'ending my life', 
+        'want to die', 
+        'self-harm', 
+        'self harm', 
+        'hang myself', 
+        'slit my wrist', 
+        'no point living', 
+        'better off dead'
+      ];
+      const isHighRisk = highRiskKeywords.some(keyword => normalizedTranscript.includes(keyword));
+
+      if (isHighRisk) {
+        const userMessage: Message = {
+          id: `user-${Date.now()}`,
+          role: 'user',
+          name: storedName as any,
+          content: userTranscript,
+          timestamp: new Date(),
+        };
+        const safetyReply: Message = {
+          id: `safety-${Date.now()}`,
+          role: 'assistant',
+          name: 'Mitra',
+          content: `${storedName}, I am right here with you, but I want to make sure you get the best human care possible right now. Please lean on these dedicated guides.`,
+          stressLevel: 'overwhelmed',
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, userMessage, safetyReply]);
+        setShowSafetyModal(true);
+        setStressLevel('overwhelmed');
+        setIsStreaming(false);
+        return;
+      }
+
+      // If not high risk, append user message to chat list
+      const userMessage: Message = {
+        id: `user-${Date.now()}`,
+        role: 'user',
+        name: storedName as any,
+        content: userTranscript,
+        timestamp: new Date(),
+      };
+      
+      // Update stress level
+      if (serverDetectedStress && ['calm', 'tired', 'stressed', 'overwhelmed'].includes(serverDetectedStress)) {
+        setStressLevel(serverDetectedStress);
+      }
+
+      // Read audio data as Blob
+      const audioBlobResponse = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlobResponse);
+
+      // Play audio response immediately
+      const audio = new Audio(audioUrl);
+      activeAudioRef.current = audio;
+      audio.play().catch(e => console.error("Playback failed:", e));
+
+      // Stream/Typewrite the response
+      setMessages((prev) => [...prev, userMessage]);
+      setStreamedText(mitraReply);
+    } catch (error) {
+      console.error('Voice transaction error:', error);
+      setStreamedText("I'm sorry, I couldn't process the audio right now. Please check your mic connection or write to me directly.");
+    } finally {
+      setIsStreaming(false);
     }
   };
 
@@ -706,18 +961,25 @@ export function CompanionChat({ stressLevel, setStressLevel }: CompanionChatProp
 
           {/* Minimalist rounded input bar with microphone and send button */}
           <div className="relative flex items-center border border-[#e2e8f0] rounded-2xl bg-[#f8fafc] p-1.5 transition-all duration-150 focus-within:bg-white focus-within:border-[#1d3557]/45 focus-within:ring-2 focus-within:ring-[#1d3557]/5">
-            {/* Microphone icon for voice-to-text */}
+            {/* Hold-to-Talk Microphone button */}
             <button
-              onClick={handleMicClick}
+              onMouseDown={startVoiceRecording}
+              onMouseUp={stopVoiceRecording}
+              onMouseLeave={stopVoiceRecording}
+              onTouchStart={startVoiceRecording}
+              onTouchEnd={stopVoiceRecording}
               disabled={isStreaming || isTyping}
-              className={`p-2.5 rounded-xl flex items-center justify-center transition-all ${
-                isListening 
-                  ? 'bg-rose-50 text-rose-600 border border-rose-200' 
+              className={`p-2.5 rounded-xl flex items-center justify-center transition-all cursor-pointer relative select-none ${
+                isRecording 
+                  ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/30 scale-105 border border-rose-400' 
                   : 'text-gray-400 hover:text-[#1d3557] hover:bg-[#f1f5f9]'
               }`}
-              title="Voice to text"
+              title="Hold to talk, release to send"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {isRecording && (
+                <span className="absolute -inset-1 rounded-xl bg-rose-500/25 animate-ping" />
+              )}
+              <svg className="w-5 h-5 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
               </svg>
             </button>
