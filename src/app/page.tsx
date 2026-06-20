@@ -212,7 +212,7 @@ export default function Home() {
       </section>
 
       {/* Designed for Your Focus Section */}
-      <section id="features" className="py-20 px-6 max-w-6xl mx-auto space-y-12">
+      <section id="features" className="py-20 px-6 max-w-6xl mx-auto space-y-12 scroll-mt-24">
         <div className="text-center space-y-3">
           <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Designed for Your Focus</h2>
           <p className="text-sm text-slate-500 max-w-lg mx-auto font-medium">
