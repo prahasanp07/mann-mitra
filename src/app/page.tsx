@@ -157,7 +157,7 @@ export default function Home() {
       </section>
 
       {/* The Reality Section */}
-      <section id="reality" className="py-20 bg-slate-100/50 border-y border-slate-250/20 px-6">
+      <section id="reality" className="py-20 bg-slate-100/50 border-y border-slate-200/20 px-6">
         <div className="max-w-4xl mx-auto text-center space-y-6">
           <div className="inline-block px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-[10px] font-bold text-emerald-700 tracking-widest uppercase">
             The Reality

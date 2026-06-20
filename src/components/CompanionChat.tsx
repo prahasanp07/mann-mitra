@@ -69,7 +69,7 @@ export function BreathingPacerWidget() {
 
   let scale = 0.75;
   let phaseText = '';
-  let phaseColor = 'from-teal-400 to-emerald-500 shadow-emerald-250';
+  let phaseColor = 'from-teal-400 to-emerald-500 shadow-emerald-200';
   let instruction = '';
 
   if (phaseIndex === 0) {
@@ -159,7 +159,7 @@ export function BreathingPacerWidget() {
         onClick={handleToggle}
         className={`mt-3 px-5 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${
           isActive
-            ? 'bg-rose-50 border border-rose-250 text-rose-600 hover:bg-rose-100'
+            ? 'bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-100'
             : 'bg-[#1d3557] text-white hover:bg-[#234676] shadow-sm shadow-[#1d3557]/20'
         }`}
       >
@@ -847,7 +847,7 @@ export function CompanionChat({ stressLevel, setStressLevel }: CompanionChatProp
                   </div>
                   <a 
                     href="tel:+919999666555" 
-                    className="text-lg font-black text-white hover:text-rose-450 flex items-center gap-2 transition-all mt-1"
+                    className="text-lg font-black text-white hover:text-rose-500 flex items-center gap-2 transition-all mt-1"
                   >
                     <svg className="w-5 h-5 text-rose-500 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
@@ -868,7 +868,7 @@ export function CompanionChat({ stressLevel, setStressLevel }: CompanionChatProp
                   </div>
                   <a 
                     href="tel:+919820466726" 
-                    className="text-lg font-black text-white hover:text-rose-450 flex items-center gap-2 transition-all mt-1"
+                    className="text-lg font-black text-white hover:text-rose-500 flex items-center gap-2 transition-all mt-1"
                   >
                     <svg className="w-5 h-5 text-rose-500 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
