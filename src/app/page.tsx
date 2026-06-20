@@ -58,6 +58,10 @@ export default function Home() {
           from { transform: translateY(20px); opacity: 0; }
           to { transform: translateY(0); opacity: 1; }
         }
+        @keyframes wave-bounce {
+          0%, 100% { transform: scaleY(0.3); }
+          50% { transform: scaleY(1.3); }
+        }
         .animate-fade-in {
           animation: fade-in 0.25s ease-out forwards;
         }
@@ -115,7 +119,7 @@ export default function Home() {
             >
               Start Your Journey
             </button>
-            <button
+            {/* <button
               onClick={handleBeginChatClick}
               className="px-6 py-3.5 rounded-xl font-bold text-xs bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 transition-all flex items-center gap-2 active:scale-[0.98] cursor-pointer"
             >
@@ -123,7 +127,7 @@ export default function Home() {
                 <path d="M8 5v14l11-7z" />
               </svg>
               Watch how it works
-            </button>
+            </button> */}
           </div>
         </div>
 
@@ -139,7 +143,7 @@ export default function Home() {
             />
             {/* Soft gradient mask */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
-            
+
             {/* Floating Card Overlay */}
             <div className="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-md rounded-2xl p-4 border border-white/40 shadow-lg flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
@@ -171,34 +175,34 @@ export default function Home() {
 
           {/* Three reality cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-10 text-left">
-            <div className="bg-white border border-slate-200/60 p-6 rounded-2xl shadow-sm hover:border-[#1d3557]/15 transition-all">
+            <div className="dashboard-card p-6 hover:scale-[1.01] hover:border-[#1d3557]/15 transition-all duration-300">
               <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-4">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
               <h3 className="text-sm font-bold text-slate-900">Unseen Burnout</h3>
-              <p className="text-xs text-slate-500 mt-2 leading-relaxed">Pushes past study boundaries without realizing mental limits until exhaustion blocks learning pathways.</p>
+              <p className="text-xs text-slate-500 mt-2 leading-relaxed font-medium">Pushes past study boundaries without realizing mental limits until exhaustion blocks learning pathways.</p>
             </div>
 
-            <div className="bg-white border border-slate-200/60 p-6 rounded-2xl shadow-sm hover:border-[#1d3557]/15 transition-all">
-              <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-4">
+            <div className="dashboard-card p-6 hover:scale-[1.01] hover:border-[#1d3557]/15 transition-all duration-300">
+              <div className="w-10 h-10 rounded-xl bg-[#e9eff6] text-[#1d3557] flex items-center justify-center mb-4">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
               </div>
               <h3 className="text-sm font-bold text-slate-900">Cognitive Overload</h3>
-              <p className="text-xs text-slate-500 mt-2 leading-relaxed">Endless named reactions and physics backlogs cluttering memory, leading to test panic and scoring dips.</p>
+              <p className="text-xs text-slate-500 mt-2 leading-relaxed font-medium">Endless named reactions and physics backlogs cluttering memory, leading to test panic and scoring dips.</p>
             </div>
 
-            <div className="bg-white border border-slate-200/60 p-6 rounded-2xl shadow-sm hover:border-[#1d3557]/15 transition-all">
+            <div className="dashboard-card p-6 hover:scale-[1.01] hover:border-[#1d3557]/15 transition-all duration-300">
               <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center mb-4">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <h3 className="text-sm font-bold text-slate-900">Isolation Stress</h3>
-              <p className="text-xs text-slate-500 mt-2 leading-relaxed">Carrying the expectations of family and peers alone, without a safe space to vent anxiety without judgment.</p>
+              <p className="text-xs text-slate-500 mt-2 leading-relaxed font-medium">Carrying the expectations of family and peers alone, without a safe space to vent anxiety without judgment.</p>
             </div>
           </div>
         </div>
@@ -211,12 +215,10 @@ export default function Home() {
           <p className="text-sm text-slate-500 max-w-lg mx-auto font-medium">
             Sophisticated tools that prioritize your mental well-being alongside your academic goals.
           </p>
-        </div>
-
-        {/* Feature widgets grid */}
+        </div>        {/* Feature widgets grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
           {/* Card 1: AI Journal (2/3 width) */}
-          <div className="bg-[#1d3557] text-white p-8 rounded-3xl md:col-span-2 shadow-md relative overflow-hidden flex flex-col justify-between min-h-[220px]">
+          <div className="dashboard-card bg-[#234676] text-white p-8 md:col-span-2 shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[220px] border-transparent">
             <div className="absolute top-6 right-6 text-white/10">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
@@ -224,8 +226,8 @@ export default function Home() {
             </div>
             <div>
               <h3 className="text-lg font-extrabold tracking-tight">AI-Powered Journaling</h3>
-              <p className="text-xs text-slate-300 mt-2 max-w-sm leading-relaxed font-medium">
-                "More than just words. Mitra listens to your journal entries and provides real-time empathetic reflections."
+              <p className="text-xs text-slate-200 mt-2 max-w-sm leading-relaxed font-medium">
+                More than just words. Mitra listens to your journal entries and provides real-time empathetic reflections.
               </p>
             </div>
             <div className="pt-6">
@@ -234,7 +236,7 @@ export default function Home() {
           </div>
 
           {/* Card 2: Insights */}
-          <div className="bg-emerald-50 text-emerald-950 p-8 rounded-3xl shadow-md flex flex-col justify-between min-h-[220px] border border-emerald-100">
+          <div className="dashboard-card bg-emerald-50/65 text-emerald-950 p-8 shadow-sm flex flex-col justify-between min-h-[220px] border border-emerald-100/80">
             <div>
               <div className="w-8 h-8 rounded-lg bg-emerald-600/10 text-emerald-700 flex items-center justify-center mb-4">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -252,7 +254,7 @@ export default function Home() {
           </div>
 
           {/* Card 3: Adaptive Relief */}
-          <div className="bg-amber-50/70 text-amber-950 p-8 rounded-3xl shadow-md flex flex-col justify-between min-h-[220px] border border-amber-200/40">
+          <div className="dashboard-card bg-amber-50/50 text-amber-950 p-8 shadow-sm flex flex-col justify-between min-h-[220px] border border-amber-200/60">
             <div>
               <div className="w-8 h-8 rounded-lg bg-amber-600/10 text-amber-700 flex items-center justify-center mb-4">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -270,16 +272,33 @@ export default function Home() {
           </div>
 
           {/* Card 4: 10-Minute Reset (2/3 width) */}
-          <div className="bg-slate-900 border border-slate-800 text-white p-8 rounded-3xl md:col-span-2 shadow-md relative overflow-hidden flex flex-col justify-between min-h-[220px]">
+          <div className="dashboard-card bg-slate-900 border border-slate-800 text-white p-8 md:col-span-2 shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[220px]">
             {/* Premium Wave graphics background */}
-            <div className="absolute inset-0 opacity-15">
+            <div className="absolute inset-0 opacity-15 z-0">
               <svg viewBox="0 0 100 20" className="w-[200%] h-full text-white fill-current animate-pulse-slow">
                 <path d="M 0 10 C 12.5 5, 12.5 15, 25 10 C 37.5 5, 37.5 15, 50 10 C 62.5 5, 62.5 15, 75 10 C 87.5 5, 87.5 15, 100 10 L 100 20 L 0 20 Z" />
               </svg>
             </div>
+
+            {/* Smooth CSS audio equalizer animation mockup */}
+            <div className="absolute bottom-6 right-8 flex items-end gap-1.5 h-12 opacity-30 pointer-events-none z-0">
+              {[...Array(10)].map((_, i) => (
+                <div
+                  key={i}
+                  className="w-1.5 bg-indigo-400 rounded-full"
+                  style={{
+                    height: '32px',
+                    animation: 'wave-bounce 1.2s ease-in-out infinite',
+                    animationDelay: `${i * 0.12}s`,
+                    transformOrigin: 'bottom',
+                  }}
+                />
+              ))}
+            </div>
+
             <div className="relative z-10">
               <h3 className="text-lg font-extrabold tracking-tight">The 10-Minute Reset</h3>
-              <p className="text-xs text-slate-300 mt-2 max-w-sm leading-relaxed font-medium">
+              <p className="text-xs text-slate-350 mt-2 max-w-sm leading-relaxed font-medium">
                 Ground calm instantly. Access simulated heart-rate-guided NSDR (Non-Sleep Deep Rest) audio sessions to recharge cognitive bandwidth.
               </p>
             </div>
@@ -299,7 +318,7 @@ export default function Home() {
           <p className="text-xs md:text-sm text-slate-500 leading-relaxed font-medium">
             Our GenAI approach isn't about just productivity hacks. We utilize Large Language Models trained on therapeutic principles to provide a supportive, steady companion during your toughest months of preparation. It's about building resilience, not just clearing a syllabus.
           </p>
-          
+
           {/* Security badge */}
           <div className="flex items-center gap-3 bg-[#e9eff6]/50 border border-[#d0dfef]/40 p-4 rounded-2xl max-w-md">
             <div className="w-8 h-8 rounded-lg bg-[#1d3557] text-white flex items-center justify-center shrink-0">
@@ -379,16 +398,15 @@ export default function Home() {
 
       {/* Onboarding Form Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-[#0f0b1a]/95 border border-violet-500/30 rounded-3xl max-w-md w-full p-8 shadow-[0_20px_50px_rgba(139,92,246,0.25)] text-left animate-slide-up relative overflow-hidden">
-            {/* Background pattern */}
-            <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-violet-600/10 blur-2xl" />
-            
-            <div className="flex justify-between items-center mb-6">
+        <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in select-none">
+          <div className="bg-slate-900 border border-slate-800 text-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative overflow-hidden text-left animate-slide-up flex flex-col gap-6">
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-teal-500 via-emerald-500 to-indigo-500" />
+
+            <div className="flex justify-between items-center">
               <h3 className="text-xl font-extrabold text-white tracking-tight">Set Up Your Mitra Profile</h3>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-full transition-all"
+                className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-full transition-all cursor-pointer"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
@@ -398,51 +416,51 @@ export default function Home() {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">What is your name?</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">What is your name?</label>
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Arjun"
-                  className="w-full bg-white/5 border border-white/10 focus:border-violet-500/50 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20 transition-all"
+                  className="w-full bg-white/5 border border-white/10 focus:border-indigo-500/50 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Which exam are you preparing for?</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Which exam are you preparing for?</label>
                 <select
                   value={exam}
                   onChange={(e) => setExam(e.target.value)}
-                  className="w-full bg-[#110e1c] border border-white/10 focus:border-violet-500/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 transition-all cursor-pointer"
+                  className="w-full bg-slate-950 border border-white/10 focus:border-indigo-500/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all cursor-pointer text-slate-350"
                 >
-                  <option value="JEE Mains">JEE Mains</option>
-                  <option value="JEE Advanced">JEE Advanced</option>
-                  <option value="NEET">NEET</option>
-                  <option value="UPSC CSE">UPSC CSE</option>
-                  <option value="Other Competitive Exam">Other Competitive Exam</option>
+                  <option value="JEE Mains" className="bg-slate-900 text-white">JEE Mains</option>
+                  <option value="JEE Advanced" className="bg-slate-900 text-white">JEE Advanced</option>
+                  <option value="NEET" className="bg-slate-900 text-white">NEET</option>
+                  <option value="UPSC CSE" className="bg-slate-900 text-white">UPSC CSE</option>
+                  <option value="Other Competitive Exam" className="bg-slate-900 text-white">Other Competitive Exam</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">What is currently your biggest stressor?</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">What is currently your biggest stressor?</label>
                 <select
                   value={stressor}
                   onChange={(e) => setStressor(e.target.value)}
-                  className="w-full bg-[#110e1c] border border-white/10 focus:border-violet-500/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 transition-all cursor-pointer"
+                  className="w-full bg-slate-950 border border-white/10 focus:border-indigo-500/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all cursor-pointer text-slate-355"
                 >
-                  <option value="Syllabus Backlog">Syllabus Backlog</option>
-                  <option value="Sleep Deprivation">Sleep Deprivation</option>
-                  <option value="Low Test Marks">Low Test Marks</option>
-                  <option value="Procrastination">Procrastination</option>
-                  <option value="General Prep Anxiety">General Prep Anxiety</option>
+                  <option value="Syllabus Backlog" className="bg-slate-900 text-white">Syllabus Backlog</option>
+                  <option value="Sleep Deprivation" className="bg-slate-900 text-white">Sleep Deprivation</option>
+                  <option value="Low Test Marks" className="bg-slate-900 text-white">Low Test Marks</option>
+                  <option value="Procrastination" className="bg-slate-900 text-white">Procrastination</option>
+                  <option value="General Prep Anxiety" className="bg-slate-900 text-white">General Prep Anxiety</option>
                 </select>
               </div>
 
               <button
                 type="submit"
                 disabled={!name.trim()}
-                className="w-full py-3.5 rounded-xl font-bold text-sm bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white shadow-lg shadow-violet-600/35 transition-all duration-200 hover:shadow-violet-600/50 active:scale-[0.98] cursor-pointer mt-2"
+                className="w-full py-3.5 rounded-xl font-bold text-sm bg-indigo-650 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed text-white shadow-lg shadow-indigo-650/25 transition-all duration-200 hover:shadow-indigo-650/40 active:scale-[0.98] cursor-pointer mt-2"
               >
                 Proceed to Chat
               </button>
