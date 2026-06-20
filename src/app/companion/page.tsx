@@ -25,6 +25,41 @@ export default function CompanionPage() {
   const [username, setUsername] = useState('Arjun');
   const [exam, setExam] = useState('JEE Mains');
 
+  // Mindfulness & Neurobiological Features State
+  const [mindfulnessTab, setMindfulnessTab] = useState<'timer' | 'sigh'>('timer');
+  const [sighActive, setSighActive] = useState(false);
+  const [sighTime, setSighTime] = useState(0);
+
+  const [showNSDRModal, setShowNSDRModal] = useState(false);
+  const [nsdrTimeLeft, setNsdrTimeLeft] = useState(600);
+  const [nsdrActive, setNsdrActive] = useState(false);
+
+  const [showPanoramicModal, setShowPanoramicModal] = useState(false);
+
+  // Physiological Sigh Timer
+  useEffect(() => {
+    if (!sighActive) return;
+    const interval = setInterval(() => {
+      setSighTime((prev) => (prev + 50) % 9000);
+    }, 50);
+    return () => clearInterval(interval);
+  }, [sighActive]);
+
+  // NSDR Timer
+  useEffect(() => {
+    if (!nsdrActive) return;
+    const interval = setInterval(() => {
+      setNsdrTimeLeft((prev) => {
+        if (prev <= 0) {
+          setNsdrActive(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [nsdrActive]);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedName = localStorage.getItem('mannmitra_username');
@@ -324,6 +359,19 @@ export default function CompanionPage() {
                       <span className="text-[10px] text-gray-500 mt-0.5 block">Optimize rest</span>
                     </div>
                   </button>
+
+                  <button onClick={() => setShowPanoramicModal(true)} className="p-4 rounded-2xl bg-[#f8fafc] border border-gray-150 text-left hover:bg-violet-50 hover:border-violet-200 transition-all flex gap-3">
+                    <div className="p-2.5 rounded-xl bg-violet-50 text-violet-600 self-start">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <span className="text-xs font-extrabold text-gray-800 block">Panoramic Vision</span>
+                      <span className="text-[10px] text-gray-500 mt-0.5 block">Peripheral dilation</span>
+                    </div>
+                  </button>
                 </div>
               </div>
             </div>
@@ -540,74 +588,346 @@ export default function CompanionPage() {
                 </div>
               </div>
             </div>
+
+            {/* Deep Focus Moment (NSDR Card) */}
+            <div className="dashboard-card p-6 bg-white border-l-4 border-l-[#1d3557] flex flex-col md:flex-row justify-between items-center gap-6 mt-6 shadow-sm">
+              <div className="space-y-2 max-w-[70%] text-left">
+                <div className="flex gap-4 items-center">
+                  <span className="text-[9px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-750 px-2 py-0.5 rounded border border-indigo-150">Recommended Recovery</span>
+                  <span className="text-[9px] font-bold text-gray-400">Dr. Huberman Protocol</span>
+                </div>
+                <h4 className="text-lg font-bold text-[#0f172a] mt-3">Deep Focus Moment (NSDR)</h4>
+                <p className="text-xs text-gray-500 leading-relaxed font-medium">
+                  A 10-minute Non-Sleep Deep Rest cycle designed to drop stress, restore neural plasticity, and clear brain fog. Perfect for resetting during intense exam prep sessions.
+                </p>
+              </div>
+              <button 
+                onClick={() => {
+                  setNsdrTimeLeft(600);
+                  setShowNSDRModal(true);
+                  setNsdrActive(true);
+                }}
+                className="w-full md:w-auto px-5 py-3.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
+              >
+                <svg className="w-4 h-4 text-indigo-400 fill-current" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+                Start Session
+              </button>
+            </div>
           </div>
         )}
 
         {/* MINDFULNESS TAB - Breathing timer */}
         {activeTab === 'mindfulness' && (
-          <div className="flex-1 flex flex-col justify-center items-center p-8 bg-black/5">
-            <div className="glass-panel p-8 rounded-3xl flex flex-col items-center max-w-md w-full border-white/5 relative overflow-hidden shadow-2xl bg-white">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-indigo-500" />
-              
-              <h2 className="text-xl font-extrabold text-[#0f172a] mb-2 mt-2">Mindful Breathing</h2>
-              <p className="text-xs text-gray-500 mb-6 text-center">
-                Box breathing: 4s inhale, 4s hold, 4s exhale, 4s empty. Calms anxiety.
-              </p>
+          <div className="flex-1 flex flex-col justify-center items-center p-8 bg-black/5 overflow-y-auto">
+            {/* Toggle tabs */}
+            <div className="flex bg-white/75 border border-gray-200/60 p-1.5 rounded-2xl mb-6 shadow-sm select-none">
+              <button
+                onClick={() => setMindfulnessTab('timer')}
+                className={`px-5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  mindfulnessTab === 'timer' 
+                    ? 'bg-[#1d3557] text-white shadow-sm' 
+                    : 'text-gray-500 hover:text-slate-900'
+                }`}
+              >
+                Study Timer & Box Breathing
+              </button>
+              <button
+                onClick={() => setMindfulnessTab('sigh')}
+                className={`px-5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  mindfulnessTab === 'sigh' 
+                    ? 'bg-[#1d3557] text-white shadow-sm' 
+                    : 'text-gray-500 hover:text-slate-900'
+                }`}
+              >
+                Physiological Sigh Pacer
+              </button>
+            </div>
 
-              {/* Segmented Timer Selector */}
-              <div className="flex bg-gray-50 border border-gray-200 p-1 rounded-xl w-full mb-8">
-                {(['study', 'shortBreak', 'longBreak'] as const).map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => handleSetTimerType(type)}
-                    className={`flex-1 py-2 text-xs font-semibold rounded-lg capitalize transition-all duration-350 ${
-                      timerType === type
-                        ? 'bg-emerald-50 border border-emerald-200 text-emerald-700'
-                        : 'text-gray-400 border border-transparent hover:text-gray-600'
-                    }`}
-                  >
-                    {type === 'study' ? 'Box Breathing (4s)' : type === 'shortBreak' ? 'Short Break (5m)' : 'Long Break (15m)'}
-                  </button>
-                ))}
-              </div>
-
-              {/* Circular Timer Representation */}
-              <div className="relative w-52 h-52 flex items-center justify-center rounded-full border border-gray-100 bg-[#f8fafc] shadow-md mb-8">
-                <div className="absolute inset-2 rounded-full border border-dashed border-emerald-500/20 animate-[spin_180s_linear_infinite]" />
+            {mindfulnessTab === 'timer' ? (
+              <div className="glass-panel p-8 rounded-3xl flex flex-col items-center max-w-md w-full border-white/5 relative overflow-hidden shadow-2xl bg-white animate-slide-up">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-indigo-500" />
                 
-                <div className="text-center">
-                  <div className="text-5xl font-extrabold text-[#0f172a] font-mono tracking-tight">
-                    {String(timerMinutes).padStart(2, '0')}:{String(timerSeconds).padStart(2, '0')}
-                  </div>
-                  <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-2">
-                    {timerActive ? 'Exercise Active' : 'Paused'}
+                <h2 className="text-xl font-extrabold text-[#0f172a] mb-2 mt-2">Mindful Breathing</h2>
+                <p className="text-xs text-gray-500 mb-6 text-center">
+                  Box breathing: 4s inhale, 4s hold, 4s exhale, 4s empty. Calms anxiety.
+                </p>
+
+                {/* Segmented Timer Selector */}
+                <div className="flex bg-gray-50 border border-gray-200 p-1 rounded-xl w-full mb-8">
+                  {(['study', 'shortBreak', 'longBreak'] as const).map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => handleSetTimerType(type)}
+                      className={`flex-1 py-2 text-xs font-semibold rounded-lg capitalize transition-all duration-355 ${
+                        timerType === type
+                          ? 'bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold'
+                          : 'text-gray-400 border border-transparent hover:text-gray-600'
+                      }`}
+                    >
+                      {type === 'study' ? 'Box Breathing (4s)' : type === 'shortBreak' ? 'Short Break (5m)' : 'Long Break (15m)'}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Circular Timer Representation */}
+                <div className="relative w-52 h-52 flex items-center justify-center rounded-full border border-gray-100 bg-[#f8fafc] shadow-md mb-8">
+                  <div className="absolute inset-2 rounded-full border border-dashed border-emerald-500/20 animate-[spin_180s_linear_infinite]" />
+                  
+                  <div className="text-center">
+                    <div className="text-5xl font-extrabold text-[#0f172a] font-mono tracking-tight animate-fade-in">
+                      {String(timerMinutes).padStart(2, '0')}:{String(timerSeconds).padStart(2, '0')}
+                    </div>
+                    <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-2">
+                      {timerActive ? 'Exercise Active' : 'Paused'}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Controls */}
-              <div className="flex gap-4 w-full">
-                <button
-                  onClick={() => setTimerActive(!timerActive)}
-                  className={`flex-1 py-3.5 rounded-xl font-bold text-sm shadow-md transition-all duration-200 ${
-                    timerActive
-                      ? 'bg-amber-600 hover:bg-amber-500 text-white shadow-amber-600/10'
-                      : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20'
-                  }`}
-                >
-                  {timerActive ? 'Pause' : 'Start Focus'}
-                </button>
-                <button
-                  onClick={handleResetTimer}
-                  className="px-6 py-3.5 rounded-xl bg-gray-50 border border-gray-200 hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-all text-sm font-semibold"
-                >
-                  Reset
-                </button>
+                {/* Controls */}
+                <div className="flex gap-4 w-full">
+                  <button
+                    onClick={() => setTimerActive(!timerActive)}
+                    className={`flex-1 py-3.5 rounded-xl font-bold text-sm shadow-md transition-all duration-200 active:scale-95 cursor-pointer ${
+                      timerActive
+                        ? 'bg-amber-600 hover:bg-amber-500 text-white shadow-amber-600/10'
+                        : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20'
+                    }`}
+                  >
+                    {timerActive ? 'Pause' : 'Start Focus'}
+                  </button>
+                  <button
+                    onClick={handleResetTimer}
+                    className="px-6 py-3.5 rounded-xl bg-gray-50 border border-gray-200 hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-all text-sm font-semibold active:scale-95 cursor-pointer"
+                  >
+                    Reset
+                  </button>
+                </div>
               </div>
-            </div>
+            ) : (
+              /* Physiological Sigh Pacer */
+              <div className="glass-panel p-8 rounded-3xl flex flex-col items-center max-w-md w-full border-white/5 relative overflow-hidden shadow-2xl bg-white animate-slide-up">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-500 via-emerald-500 to-indigo-500" />
+                
+                <h2 className="text-xl font-extrabold text-[#0f172a] mb-2 mt-2">Physiological Sigh</h2>
+                <p className="text-xs text-gray-500 mb-6 text-center leading-relaxed">
+                  Two quick inhales followed by a long, slow exhale. The fastest way to trigger your parasympathetic nervous system.
+                </p>
+
+                {/* Visual circle pacer */}
+                <div className="relative w-52 h-52 flex items-center justify-center mb-8 select-none">
+                  {/* Outer boundary guide */}
+                  <div className="absolute inset-0 rounded-full border border-dashed border-teal-500/10" />
+                  
+                  <div
+                    className={`absolute rounded-full bg-gradient-to-br ${
+                      sighActive
+                        ? (sighTime % 9000 < 2000 
+                            ? 'from-teal-400 to-emerald-500 shadow-emerald-250/50' 
+                            : sighTime % 9000 < 3000 
+                            ? 'from-indigo-400 to-blue-500 shadow-blue-200/50' 
+                            : 'from-rose-450 to-amber-500 shadow-rose-200/50')
+                        : 'from-slate-400 to-slate-500 shadow-slate-200/50'
+                    } flex flex-col items-center justify-center text-white font-bold transition-all duration-[75ms] ease-out shadow-lg`}
+                    style={{
+                      width: '140px',
+                      height: '140px',
+                      transform: `scale(${
+                        !sighActive 
+                          ? 0.5 
+                          : (sighTime % 9000 < 2000 
+                              ? 0.5 + 0.3 * ((sighTime % 9000) / 2000) 
+                              : sighTime % 9000 < 3000 
+                              ? 0.8 + 0.2 * (((sighTime % 9000) - 2000) / 1000) 
+                              : 1.0 - 0.5 * (((sighTime % 9000) - 3000) / 6000))
+                      })`,
+                    }}
+                  >
+                    <span className="text-sm tracking-widest uppercase font-extrabold">
+                      {!sighActive 
+                        ? 'READY' 
+                        : (sighTime % 9000 < 2000 
+                            ? 'Inhale 1' 
+                            : sighTime % 9000 < 3000 
+                            ? 'Inhale 2' 
+                            : 'Sigh Out')}
+                    </span>
+                    {sighActive && (
+                      <span className="text-[10px] font-bold tracking-wider opacity-85 mt-1">
+                        {sighTime % 9000 < 2000 
+                          ? `${Math.ceil((2000 - (sighTime % 9000)) / 1000)}s` 
+                          : sighTime % 9000 < 3000 
+                          ? `${Math.ceil((3000 - (sighTime % 9000)) / 1000)}s` 
+                          : `${Math.ceil((9000 - (sighTime % 9000)) / 1000)}s`}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <p className="text-xs font-semibold text-slate-650 text-center min-h-[36px] px-6 leading-relaxed mb-6">
+                  {!sighActive 
+                    ? 'Click start to begin the 2-step inhale and slow exhale pacer.' 
+                    : (sighTime % 9000 < 2000 
+                        ? 'Inhale deeply through your nose...' 
+                        : sighTime % 9000 < 3000 
+                        ? 'Take a second, sharp inhale to fill the lungs!' 
+                        : 'Let out a slow, long sigh through your mouth...')}
+                </p>
+
+                {/* Controls */}
+                <div className="flex gap-4 w-full">
+                  <button
+                    onClick={() => {
+                      setSighActive(!sighActive);
+                      if (!sighActive) setSighTime(0);
+                    }}
+                    className={`flex-1 py-3.5 rounded-xl font-bold text-sm shadow-md transition-all duration-200 active:scale-95 cursor-pointer ${
+                      sighActive
+                        ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-600/10'
+                        : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20'
+                    }`}
+                  >
+                    {sighActive ? 'Pause Pacer' : 'Start Pacer'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>
+
+      {/* NSDR Modal Player */}
+      {showNSDRModal && (
+        <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in select-none overflow-hidden">
+          <style>{`
+            @keyframes wave-bounce {
+              0%, 100% { transform: scaleY(0.3); }
+              50% { transform: scaleY(1.3); }
+            }
+            .audio-bar {
+              animation: wave-bounce 1.2s ease-in-out infinite;
+              transform-origin: bottom;
+            }
+          `}</style>
+          <div className="bg-slate-900 border border-slate-800 text-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative overflow-hidden text-center animate-slide-up">
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
+            
+            <div className="flex justify-between items-center mb-6">
+              <span className="text-[10px] font-bold uppercase tracking-widest bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/20">
+                NSDR Session Active
+              </span>
+              <button
+                onClick={() => {
+                  setNsdrActive(false);
+                  setShowNSDRModal(false);
+                }}
+                className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-full transition-all cursor-pointer"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <h3 className="text-xl font-extrabold tracking-tight">Non-Sleep Deep Rest</h3>
+            <p className="text-xs text-slate-400 mt-1.5 font-medium leading-relaxed max-w-xs mx-auto">
+              A 10-minute deep relaxation protocol designed to restore synaptic baseline and reduce overall fatigue.
+            </p>
+
+            {/* Countdown timer */}
+            <div className="font-mono text-5xl font-black tracking-tight text-white my-8">
+              {Math.floor(nsdrTimeLeft / 60)}:{String(nsdrTimeLeft % 60).padStart(2, '0')}
+            </div>
+
+            {/* Smooth CSS audio equalizer animation */}
+            <div className="flex items-end justify-center gap-1.5 h-16 my-8">
+              {[...Array(14)].map((_, i) => (
+                <div
+                  key={i}
+                  className={`w-1.5 bg-indigo-400 rounded-full transition-all duration-300 ${
+                    nsdrActive ? 'audio-bar' : ''
+                  }`}
+                  style={{
+                    height: '100%',
+                    animationDelay: `${i * 0.08}s`,
+                    transform: !nsdrActive ? 'scaleY(0.2)' : undefined
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Play/Pause controls */}
+            <div className="flex gap-4">
+              <button
+                onClick={() => setNsdrActive(!nsdrActive)}
+                className={`flex-1 py-3.5 rounded-xl font-bold text-xs shadow-md transition-all duration-200 active:scale-95 cursor-pointer ${
+                  nsdrActive
+                    ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-600/10'
+                    : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-600/20'
+                }`}
+              >
+                {nsdrActive ? 'Pause Session' : 'Resume Session'}
+              </button>
+              <button
+                onClick={() => {
+                  setNsdrActive(false);
+                  setShowNSDRModal(false);
+                }}
+                className="px-6 py-3.5 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 hover:text-white transition-all text-xs font-bold active:scale-95 cursor-pointer"
+              >
+                Exit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Panoramic Vision Modal */}
+      {showPanoramicModal && (
+        <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex flex-col items-center justify-between p-8 text-center animate-fade-in select-none overflow-hidden">
+          <style>{`
+            @keyframes expand-ring {
+              0% { transform: scale(1); opacity: 0.8; }
+              100% { transform: scale(300); opacity: 0; }
+            }
+            .panoramic-ring {
+              animation: expand-ring 6s cubic-bezier(0.1, 0.8, 0.25, 1) infinite;
+            }
+          `}</style>
+          
+          {/* Top description */}
+          <div className="max-w-md space-y-3 mt-12 relative z-10">
+            <h3 className="text-xl font-extrabold tracking-tight text-white">Panoramic Vision Exercise</h3>
+            <p className="text-xs text-slate-400 leading-relaxed font-medium">
+              Stare directly at the central red dot. Without moving your eyes, let your visual awareness dilate and follow the rings rippling out to the borders of the viewport.
+            </p>
+          </div>
+
+          {/* Central focus point and expanding peripheral rings */}
+          <div className="relative w-40 h-40 flex items-center justify-center">
+            {/* Concentric rings rippling outward */}
+            <div className="absolute w-2 h-2 rounded-full border border-violet-500/40 panoramic-ring" style={{ animationDelay: '0s' }} />
+            <div className="absolute w-2 h-2 rounded-full border border-violet-500/30 panoramic-ring" style={{ animationDelay: '1.5s' }} />
+            <div className="absolute w-2 h-2 rounded-full border border-violet-500/20 panoramic-ring" style={{ animationDelay: '3s' }} />
+            <div className="absolute w-2 h-2 rounded-full border border-violet-500/10 panoramic-ring" style={{ animationDelay: '4.5s' }} />
+
+            {/* Central dot */}
+            <div className="absolute w-4 h-4 rounded-full bg-rose-500/30 animate-ping" />
+            <div className="absolute w-3.5 h-3.5 rounded-full bg-rose-600 shadow-[0_0_15px_rgba(244,63,94,0.6)]" />
+          </div>
+
+          {/* Bottom dismiss button */}
+          <div className="mb-12 relative z-10 w-full max-w-xs">
+            <button
+              onClick={() => setShowPanoramicModal(false)}
+              className="w-full py-3.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-200 text-xs font-bold transition-all hover:text-white active:scale-95 cursor-pointer"
+            >
+              End Exercise
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
